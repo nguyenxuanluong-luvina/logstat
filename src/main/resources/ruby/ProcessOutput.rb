@@ -1,13 +1,6 @@
 require 'ruby/libs/Common.rb'
 
 include CommonUtils
-CommonUtils.require_gem('rubygems')
-#CommonUtils.require_gem('bson_ext')
-#CommonUtils.require_gem('mongo')
-CommonUtils.require_gem('net/http')
-#CommonUtils.require_gem('active_support')
-CommonUtils.require_gem('json')
-#include Mongo
 
 class ProcessOutput
   ##
@@ -24,16 +17,19 @@ class ProcessOutput
         if output_conf['type'] != nil && output_conf['type'] != ''
           outputType = output_conf['type']
         end
-
         # Check outputType to call corresponding process
         if outputType == "file" # Out to file/stdout
           configFile = output_conf['config']
-          if configFile['path'] != nil && configFile['path'] != '' && configFile['path'] != "stdout"
-            self.writeToFile(data['list_logs'], configFile['path'])
-          else
-            data['list_logs'].each do |eLog|
-              puts "#{eLog}"
+          if(!configFile.nil? && !configFile.empty?)
+            if configFile['path'] != nil && configFile['path'] != '' && configFile['path'] != "stdout"
+              self.writeToFile(data['list_logs'], configFile['path'])
+            else
+              data['list_logs'].each do |eLog|
+                puts "#{eLog}"
+              end
             end
+          else
+            puts "[Logstat]: No output configuration specific !"
           end
         elsif outputType == "mongoDB" # Put on MongoDB
           # Call method process insert to mongo db
@@ -47,7 +43,7 @@ class ProcessOutput
           self.putOutJobFormat(data)
         end
       else
-        puts "[Logstat]: No data to output !"  
+        puts "[Logstat]: No data to output !"
       end
     else
       puts "[Logstat]: No data to output !"
@@ -67,7 +63,7 @@ class ProcessOutput
         end
       end
     rescue Exception => e
-      puts "Can not create/open file with path config !!!"
+      puts "[Logstat]: Can not create/open file with path config !!!"
     end
   end
 
@@ -77,6 +73,11 @@ class ProcessOutput
   # @param mongoConf: configuration from job
   ##
   def insertToMongo(data, mongoConf, mapDefaultOutput)
+    CommonUtils.require_gem('bson')
+    CommonUtils.require_gem('mongo')
+    CommonUtils.require_gem('bson_ext')
+    include Mongo
+
     if mongoConf != {}
       # Host
       host = mapDefaultOutput['host']
@@ -109,12 +110,12 @@ class ProcessOutput
         db.authenticate(user, pass)
         tbl_log = db.collection(tblInsert)
         tbl_log.insert(data)
-        puts "SUCCESS: Write data to MongoDB (table: #{tblInsert})!!!"
+        puts "[Logstat]: SUCCESS: Write data to MongoDB (table: #{tblInsert})!!!"
       rescue Exception => ex
-        puts "ERROR: #{ex}"
+        puts "[Logstat]: ERROR: #{ex}"
       end
     else
-      puts "Must be config information (host, port, dbName, user, pass) to put data to MongoDB !!!"
+      puts "[Logstat]: Must be config information (host, port, dbName, user, pass) to put data to MongoDB !!!"
     end
   end
 
@@ -124,6 +125,10 @@ class ProcessOutput
   # @param servletConf: configuration from job
   ##
   def sendToServlet(data, servletConf, mapDefaultOutput)
+    CommonUtils.require_gem('net/http')
+    CommonUtils.require_gem('active_support')
+    CommonUtils.require_gem('json')
+
     pathConf = mapDefaultOutput['pathConf']
     if servletConf['path'] != nil && servletConf['path'] != ''
       pathConf = servletConf['path']

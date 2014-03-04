@@ -162,7 +162,6 @@ def getLogsCSVByDate(path,start_file_name=nil,from_date=nil,asc_by_fname=nil)
               logs_time = Date.parse(csv_obj[0])
               if(!from_date.nil?)
                 if( logs_time >= from_date)
-                  puts "zooooooooo"
                   list_logs << csv_obj.to_hash
                 end
               else

@@ -16,7 +16,6 @@ class ProcessFilter
     resultData = Array.new
     finalData = Hash.new
     if(!mapDataFromInput.nil?)
-      puts "mapDataFromInput #{mapDataFromInput}"
       list_logs = mapDataFromInput['list_logs']
       if list_logs != nil && list_logs != []
         if list_logs[0].class.to_s == "String"

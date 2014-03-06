@@ -47,7 +47,7 @@ def getLogsByLine(path,start_file_name,start_pos,asc_by_fname)
       if(start_file_name == nil )
         start_file_name = sorted_by_modified.first
       end
-
+        
       Dir.entries(path).sort.each  do |log_file|
         if((log_file <=> start_file_name) >= 0)
           if File.file?(File.join(path,log_file))
@@ -123,7 +123,7 @@ def getLogsByDate(path,start_file_name,from_date,asc_by_fname)
       puts "[Logstat]  : 'start_file_name' parameter must be required !"
       return
     end
-    list_logs.push(getLogsSingleFileByDate(path,start_file_name,from_date,asc_by_fname,persist_from_date))
+    list_logs = getLogsSingleFileByDate(path,start_file_name,from_date,asc_by_fname,persist_from_date)
   else
     #Get logs from multi files
     sorted_by_modified = Dir.entries(path).sort_by {|f| File.mtime(File.join(path,f))}.reject{|entry| entry == "." || entry == ".."}
@@ -132,10 +132,11 @@ def getLogsByDate(path,start_file_name,from_date,asc_by_fname)
       if(start_file_name == nil )
         start_file_name = sorted_by_modified.first
       end
+
       Dir.entries(path).sort.each  do |log_file|
         if File.file?(File.join(path,log_file))
           if((start_file_name <=> log_file) <= 0)
-            list_logs.push(getLogsSingleFileByDate(path,log_file,from_date,asc_by_fname,persist_from_date))
+            list_logs.concat(getLogsSingleFileByDate(path,log_file,from_date,asc_by_fname,persist_from_date))
             persist_start_file_name = log_file
           end
         end
@@ -148,7 +149,7 @@ def getLogsByDate(path,start_file_name,from_date,asc_by_fname)
       Dir.entries(path).sort.reverse.each do |log_file|
         if File.file?(File.join(path,log_file))
           if((start_file_name <=> log_file) >= 0)
-            list_logs.push(getLogsSingleFileByDate(path,log_file,from_date,asc_by_fname,persist_from_date))
+            list_logs.concat(getLogsSingleFileByDate(path,log_file,from_date,asc_by_fname,persist_from_date))
             persist_start_file_name = log_file
           end
         end

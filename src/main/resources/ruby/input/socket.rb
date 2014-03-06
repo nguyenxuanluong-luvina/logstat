@@ -1,4 +1,3 @@
-
 ##
 # get logs from socket
 # @param host
@@ -7,6 +6,13 @@
 # @return listLogs
 ##
 def getDataFromSocket(port,timeout,host)
+  
+  if(timeout.is_a? String)
+    timeout = timeout.to_i
+  end
+  if(port.is_a? String)
+    port = timeout.to_i
+  end
   require 'socket'
   begin
     server = TCPServer.open(host,port)  # Socket to listen on @port
@@ -28,7 +34,9 @@ def getDataFromSocket(port,timeout,host)
       end_time = Time.now
     end
   rescue Exception => ex
-      puts "[Logstat]  :  #{ex}"
+    puts "[Logstat]  :  #{ex}"
   end
-  return listLogs
+  finalData = Hash.new
+  finalData["list_logs"] = listLogs
+  return finalData
 end

@@ -1,6 +1,8 @@
 package impl;
 
 import java.util.HashMap;
+import java.util.Map;
+
 import org.jruby.embed.LocalContextScope;
 import org.jruby.embed.LocalVariableBehavior;
 import org.jruby.embed.ScriptingContainer;
@@ -24,7 +26,8 @@ public class LogStatImpl implements LogStat{
 	 * Monitoring logs
 	 * @param args : An array of paramters
 	 */
-	public void runLogStat(HashMap<String,Object> conf) {
+	public Object runLogStat(HashMap<String,Object> conf) {
+		Object finalData = new HashMap<String, Object>();
 		try {
 			// Get default values
 			HashMap<String, Object> mapDefaultInput = new HashMap<String, Object>();
@@ -59,12 +62,14 @@ public class LogStatImpl implements LogStat{
 			container.runScriptlet("bean.setOutput(pf.filter(filter_type, filter_conf, bean.getInput))");
 			//Output logs
 			container.runScriptlet("po = ProcessOutput.new");
-			container.runScriptlet("po.output(bean.getOutput,(bean.getConfig)['output'], mapDefaultOutput)");
-			
+			container.runScriptlet("dataFromOutput = po.output(bean.getOutput,(bean.getConfig)['output'], mapDefaultOutput)");
+
+			finalData = container.get("dataFromOutput");
 			System.out.println("LogStartService Completed ...");
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
+		return finalData;
 	}
 	//Bean to store logstat information (input-output data & configuration)
 	public class LogStatBean {

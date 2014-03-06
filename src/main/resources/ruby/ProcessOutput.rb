@@ -155,6 +155,9 @@ class ProcessOutput
   # @return data
   ##
   def putOutJobFormat(data)
+		CommonUtils.require_gem('rubygems')
+		CommonUtils.require_gem('json')
+		data = JSON(data)
     return data
   end
 end

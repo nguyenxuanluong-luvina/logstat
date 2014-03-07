@@ -6,7 +6,7 @@
 # @return listLogs
 ##
 def getDataFromSocket(port,timeout,host)
-  
+
   if(timeout.is_a? String)
     timeout = timeout.to_i
   end
@@ -14,6 +14,7 @@ def getDataFromSocket(port,timeout,host)
     port = timeout.to_i
   end
   require 'socket'
+  require 'timeout'
   begin
     server = TCPServer.open(host,port)  # Socket to listen on @port
     listLogs = Array.new
@@ -21,17 +22,23 @@ def getDataFromSocket(port,timeout,host)
     end_time = start_time
     #Check if process not timeout
     while(end_time - start_time < timeout ) do
-      Thread.start(server.accept) do |socket|
-        begin
-          logs_string = socket.gets
-          listLogs << logs_string
-        rescue Exception => e
-          puts "[Logstat]  :  #{e}"
-        ensure
-          socket.close
+      begin
+        Timeout.timeout(timeout) do
+          Thread.start(server.accept) do |socket|
+            begin
+              logs_string = socket.gets
+              listLogs << logs_string
+            rescue Exception => e
+              puts "[Logstat]  :  #{e}"
+            ensure
+              socket.close
+            end
+          end
+          end_time = Time.now
         end
+      rescue Timeout::Error
+        puts "[Logstat] : Timeout error !"
       end
-      end_time = Time.now
     end
   rescue Exception => ex
     puts "[Logstat]  :  #{ex}"

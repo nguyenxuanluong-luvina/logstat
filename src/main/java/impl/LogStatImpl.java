@@ -1,8 +1,6 @@
 package impl;
 
 import java.util.HashMap;
-import java.util.Map;
-
 import org.jruby.embed.LocalContextScope;
 import org.jruby.embed.LocalVariableBehavior;
 import org.jruby.embed.ScriptingContainer;
@@ -26,8 +24,8 @@ public class LogStatImpl implements LogStat{
 	 * Monitoring logs
 	 * @param args : An array of paramters
 	 */
-	public Object runLogStat(HashMap<String,Object> conf) {
-		Object finalData = new HashMap<String, Object>();
+	public String runLogStat(HashMap<String,Object> conf) {
+		String finalData = "";
 		try {
 			// Get default values
 			HashMap<String, Object> mapDefaultInput = new HashMap<String, Object>();
@@ -39,7 +37,7 @@ public class LogStatImpl implements LogStat{
 			
 			// Ruby process
 			LogStatBean bean = new LogStatBean();
-			ScriptingContainer container = new OSGiScriptingContainer(this.bundle,LocalContextScope.SINGLETHREAD,LocalVariableBehavior.PERSISTENT);
+			ScriptingContainer container = new OSGiScriptingContainer(this.bundle,LocalContextScope.CONCURRENT,LocalVariableBehavior.PERSISTENT);
 			container.setHomeDirectory("classpath:/META-INF/jruby.home");
 			System.out.println("LogStartService Running ...");
 
@@ -63,8 +61,9 @@ public class LogStatImpl implements LogStat{
 			//Output logs
 			container.runScriptlet("po = ProcessOutput.new");
 			container.runScriptlet("dataFromOutput = po.output(bean.getOutput,(bean.getConfig)['output'], mapDefaultOutput)");
-
-			finalData = container.get("dataFromOutput");
+			if (container.get("dataFromOutput") != null ) {
+				finalData = (String) container.get("dataFromOutput");
+			}
 			System.out.println("LogStartService Completed ...");
 		} catch (Exception ex) {
 			ex.printStackTrace();
